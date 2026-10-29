@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Infancias interrumpidas: una plataforma que traduce imágenes de represión en sonidos asociados a la infancia.">
+  <title>Infancias interrumpidas</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="final.css">
+</head>
+<body>
+  <header class="topbar">
+    <p class="eyebrow">Infancias interrumpidas · Traducción audiovisual</p>
+    <button id="aboutButton" class="text-button" type="button">¿Qué estoy escuchando?</button>
+  </header>
+
+  <main>
+    <section class="intro" aria-labelledby="title">
+      <div class="memory-marks" aria-hidden="true">
+        <i></i><i></i><i></i><i></i><i></i>
+      </div>
+      <div>
+        <p class="chapter">01 / La imagen recuerda</p>
+        <h1 id="title">Infancias<br><span>interrumpidas</span></h1>
+      </div>
+      <div class="intro-copy">
+        <p class="statement">Mientras unos corrían por miedo, otros aprendían a correr jugando.</p>
+        <p class="intro-instruction">Presiona <strong>Comenzar escucha</strong>. El movimiento del archivo activará recuerdos sonoros de aquello que la violencia interrumpió.</p>
+      </div>
+    </section>
+
+    <section class="interaction-guide" aria-label="Cómo recorrer la experiencia">
+      <p><span>01</span><strong>Mira</strong><small>La imagen histórica se divide en zonas sensibles.</small></p>
+      <p><span>02</span><strong>Escucha</strong><small>Cada cambio despierta una grabación de infancia.</small></p>
+      <p><span>03</span><strong>Interviene</strong><small>Modifica detección, mezcla y transformación sonora.</small></p>
+    </section>
+
+    <section class="experience">
+      <div class="viewer">
+        <video id="sourceVideo" playsinline muted crossorigin="anonymous"></video>
+        <canvas id="analysisCanvas" aria-label="Visualización del análisis de movimiento"></canvas>
+        <div class="viewer-status">
+          <span id="statusDot" class="status-dot"></span>
+          <span id="statusText">Esperando</span>
+        </div>
+        <div class="pitch-guide" id="pitchGuide" aria-hidden="true">
+          <span>arriba · permanecen agudos</span>
+          <span>centro · espectro completo</span>
+          <span>abajo · permanecen graves</span>
+        </div>
+        <div class="fullscreen-tools">
+          <button id="immersivePlaybackButton" class="immersive-playback" type="button">Comenzar</button>
+          <button id="fullscreenButton" type="button">Pantalla completa</button>
+        </div>
+        <div class="immersive-credits" aria-label="Créditos visibles en pantalla completa">
+          <span>Archivo audiovisual</span>
+          <strong>Museo de la Memoria y los Derechos Humanos</strong>
+          <small>Grabaciones sonoras originales · autoría propia</small>
+        </div>
+      </div>
+
+      <aside class="controls" aria-label="Controles de la experiencia">
+        <div class="control-block">
+          <p class="label">Recorrido</p>
+          <p class="control-copy">Seis fragmentos de archivo forman un montaje continuo. Cada tramo asigna una familia sonora; el cambio de píxeles decide cuándo se escucha.</p>
+          <label class="parameter" for="stageSelect">Ir a un momento</label>
+          <select id="stageSelect">
+            <option value="0">01 · Correr — risa</option>
+            <option value="1">02 · Interrupción — caja musical</option>
+            <option value="2">03A · Agua y represión — respiraciones</option>
+            <option value="3">03B · Humo — respiraciones</option>
+            <option value="4">04A · Rostro infantil — voces</option>
+            <option value="5">04B · Ausencia — voces</option>
+          </select>
+          <div class="active-rule" id="activeRule" aria-live="polite">
+            <span>Ahora puede activarse</span>
+            <strong>Risa infantil</strong>
+            <small>Cuando la cuadrícula detecta movimiento en la escena de correr.</small>
+          </div>
+        </div>
+
+        <div class="control-block">
+          <p class="label">Detección</p>
+          <label class="parameter" for="pixelThreshold">Umbral por píxel <output id="pixelThresholdValue">24</output></label>
+          <input id="pixelThreshold" type="range" min="8" max="80" value="24">
+          <label class="parameter" for="zoneSensitivity">Sensibilidad por zona <output id="zoneSensitivityValue">4%</output></label>
+          <input id="zoneSensitivity" type="range" min="1" max="30" value="4">
+          <label class="parameter" for="cooldown">Repetición <output id="cooldownValue">1000 ms</output></label>
+          <input id="cooldown" type="range" min="900" max="3000" step="100" value="1000">
+        </div>
+
+        <div class="control-block">
+          <p class="label">Sonido y mapping</p>
+          <label class="parameter" for="masterVolume">Volumen <output id="masterVolumeValue">72%</output></label>
+          <input id="masterVolume" type="range" min="0" max="100" value="72">
+          <label class="parameter" for="gameVolume">Risas <output id="gameVolumeValue">105%</output></label>
+          <input id="gameVolume" type="range" min="0" max="150" value="105">
+          <label class="parameter" for="boxVolume">Caja musical <output id="boxVolumeValue">135%</output></label>
+          <input id="boxVolume" type="range" min="0" max="150" value="135">
+          <label class="parameter" for="breathVolume">Respiración <output id="breathVolumeValue">115%</output></label>
+          <input id="breathVolume" type="range" min="0" max="150" value="115">
+          <label class="parameter" for="voiceVolume">Voces <output id="voiceVolumeValue">140%</output></label>
+          <input id="voiceVolume" type="range" min="0" max="180" value="140">
+          <label class="check-row"><input id="volumeMapping" type="checkbox" checked> Intensidad → volumen</label>
+          <label class="check-row"><input id="panMapping" type="checkbox" checked> Posición horizontal → pan</label>
+          <label class="check-row"><input id="spectrumMapping" type="checkbox" checked> Posición vertical → espectro</label>
+          <label class="check-row"><input id="envelopeMapping" type="checkbox" checked> Tramo → envolvente ADSR</label>
+          <label class="check-row"><input id="distortionMapping" type="checkbox" checked> Intensidad → deformación</label>
+          <label class="parameter" for="distortionAmount">Deformación máxima <output id="distortionAmountValue">45%</output></label>
+          <input id="distortionAmount" type="range" min="0" max="100" value="45">
+          <p class="control-copy" id="adsrReadout">ADSR actual: ataque 0,05 s · caída 0,18 s · sostén 72% · salida 0,25 s.</p>
+          <canvas id="waveCanvas" class="wave-canvas" width="520" height="92" aria-label="Forma de onda del sonido transformado"></canvas>
+          <p class="control-copy">Arriba conserva frecuencias agudas; el centro mantiene el espectro completo; abajo conserva frecuencias graves. “Probar” siempre permite comparar con el original.</p>
+          <label class="check-row"><input id="loopVideo" type="checkbox" checked> Repetir video</label>
+        </div>
+
+        <div class="control-block sound-bank">
+          <p class="label">Banco sonoro · elige qué escuchar</p>
+          <label class="sound-choice" data-kind="juego" data-file="risas-nina.ogg"><input type="checkbox" data-sound="risas-nina.ogg" checked><span><strong>Risa infantil</strong><small>01 · movimiento al correr</small></span><button type="button" data-preview="risas-nina.ogg">Probar</button></label>
+          <label class="sound-choice" data-kind="caja" data-file="caja-musical-generada"><input type="checkbox" data-sound="caja-musical-generada" checked><span><strong>Caja musical generada</strong><small>02 · al comenzar la interrupción</small></span><button type="button" data-preview="caja-musical-generada">Probar</button></label>
+          <label class="sound-choice" data-kind="respiracion" data-file="respiracion-agitada-01.ogg"><input type="checkbox" data-sound="respiracion-agitada-01.ogg" checked><span><strong>Respiración 01</strong><small>03 · movimiento entre el humo</small></span><button type="button" data-preview="respiracion-agitada-01.ogg">Probar</button></label>
+          <label class="sound-choice" data-kind="respiracion" data-file="respiracion-agitada-02.ogg"><input type="checkbox" data-sound="respiracion-agitada-02.ogg" checked><span><strong>Respiración 02</strong><small>03 · movimiento entre el humo</small></span><button type="button" data-preview="respiracion-agitada-02.ogg">Probar</button></label>
+          <label class="sound-choice" data-kind="respiracion" data-file="respiracion-agitada-03.ogg"><input type="checkbox" data-sound="respiracion-agitada-03.ogg" checked><span><strong>Respiración 03</strong><small>03 · movimiento entre el humo</small></span><button type="button" data-preview="respiracion-agitada-03.ogg">Probar</button></label>
+          <label class="sound-choice" data-kind="voz" data-file="mama.ogg"><input type="checkbox" data-sound="mama.ogg" checked><span><strong>“Mamá”</strong><small>04 · cuando domina la quietud</small></span><button type="button" data-preview="mama.ogg">Probar</button></label>
+          <label class="sound-choice" data-kind="voz" data-file="mama-donde-estas.ogg"><input type="checkbox" data-sound="mama-donde-estas.ogg" checked><span><strong>“Mamá, ¿dónde estás?”</strong><small>04 · cuando el cambio es intenso</small></span><button type="button" data-preview="mama-donde-estas.ogg">Probar</button></label>
+          <p class="control-copy">Desmarca una grabación para excluirla. “Probar” reproduce el archivo original, sin filtros.</p>
+        </div>
+
+        <div class="control-block mapping">
+          <p class="label">Traducción activa</p>
+          <div><span class="swatch run"></span><strong>01 · Correr</strong><small>movimiento del fragmento → risa</small></div>
+          <div><span class="swatch weapon"></span><strong>02 · Interrupción</strong><small>movimiento del fragmento → caja musical</small></div>
+          <div><span class="swatch smoke"></span><strong>03 · Respirar</strong><small>movimiento y humo → respiración</small></div>
+          <div><span class="swatch still"></span><strong>04 · Ausencia</strong><small>quietud → “mamá”; cambio intenso → “¿dónde estás?”</small></div>
+        </div>
+
+      </aside>
+    </section>
+
+    <section class="reading" aria-label="Lectura en tiempo real">
+      <div><span>Movimiento total</span><strong id="motionReadout">0%</strong></div>
+      <div><span>Zona activa</span><strong id="zoneReadout">—</strong></div>
+      <div><span>Sonido</span><strong id="soundReadout">silencio</strong></div>
+      <div class="meter"><i id="motionMeter"></i></div>
+    </section>
+
+    <section class="score" aria-labelledby="scoreTitle">
+      <div>
+        <p class="chapter">Partitura en tiempo real</p>
+        <h2 id="scoreTitle">Los últimos diez segundos de la traducción.</h2>
+      </div>
+      <canvas id="scoreCanvas" width="1200" height="260" aria-label="Partitura temporal de los sonidos activados"></canvas>
+    </section>
+
+    <section class="concept" id="concept">
+      <p class="chapter">02 / La escucha traduce</p>
+      <div class="concept-grid">
+        <h2>La violencia no suena aquí como un disparo.</h2>
+        <div>
+          <p>La plataforma recorre en bucle seis fragmentos de archivo sobre represión. En cada tramo, la cuadrícula detecta dónde cambia la imagen y activa una familia sonora: risas, caja musical, respiraciones o voces infantiles.</p>
+          <p>Los sonidos no pertenecen a los videos originales. Son grabaciones realizadas para este proyecto y aparecen como un contraste: mientras la imagen muestra miedo y violencia, la escucha recuerda aquello que fue interrumpido.</p>
+          <p>Los colores de lápices y juguetes aparecen solo donde algo cambia. No vuelven alegre el archivo: señalan la persistencia fragmentada de una infancia dentro de esas imágenes.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="credits" aria-label="Créditos y fuentes">
+      <p class="chapter">Créditos y fuentes</p>
+      <div>
+        <p><strong>Material audiovisual</strong><span>Museo de la Memoria y los Derechos Humanos.</span></p>
+        <p><strong>Sonido</strong><span>Grabaciones de autoría propia y caja musical generada con Web Audio.</span></p>
+      </div>
+    </footer>
+  </main>
+
+  <dialog id="aboutDialog">
+    <button id="closeDialog" class="dialog-close" aria-label="Cerrar">×</button>
+    <p class="chapter">Cómo funciona</p>
+    <h2>Una traducción, no una ilustración.</h2>
+    <p>La imagen se divide en doce zonas. Cada zona compara su luminosidad con el fotograma anterior. Si el porcentaje de píxeles modificados supera la sensibilidad y ya pasó el tiempo de repetición, el cambio activa una grabación.</p>
+    <p>El sistema no reconoce armas, humo ni personas. Lee cantidad y posición del cambio; la relación con juego, interrupción, respiración y ausencia es una decisión de diseño.</p>
+    <p>Los siete sonidos utilizados están identificados. “Probar” reproduce cada archivo original; durante la experiencia, el ADSR, el espectro y la deformación pueden transformar su aparición según las reglas activas.</p>
+  </dialog>
+
+  <nav class="transport" aria-label="Controles principales de reproducción">
+    <span class="transport-label">La escucha comienza aquí</span>
+    <button id="startButton" class="primary-button" type="button">Comenzar escucha</button>
+    <button id="muteButton" class="secondary-button" type="button" disabled>Silenciar</button>
+  </nav>
+
+  <script src="script.js"></script>
+</body>
+</html>

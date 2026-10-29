@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Revisar audios — Infancias interrumpidas</title>
+<style>
+body{margin:0;background:#111;color:#f4efe6;font-family:system-ui,sans-serif}main{max-width:1050px;margin:auto;padding:40px 20px}h1{font-size:clamp(28px,6vw,56px);margin:0 0 8px}.intro{color:#bbb;margin-bottom:30px}.audio{display:grid;grid-template-columns:140px minmax(220px,1fr) 180px 150px;gap:16px;align-items:center;padding:15px 0;border-top:1px solid #444}.audio strong{font-family:monospace}audio{width:100%}select,input{font:inherit}.volume{display:grid;gap:4px;font-size:.72rem;color:#bbb}.volume input{width:100%}.saved{position:sticky;bottom:0;padding:16px;background:#eee;color:#111;display:flex;justify-content:space-between;gap:20px;align-items:center}.saved a{color:#111}@media(max-width:800px){.audio{grid-template-columns:1fr}.saved{align-items:flex-start;flex-direction:column}}
+</style>
+<main><h1>Banco de sonidos</h1><p class="intro">Reproduce cada archivo y asígnale su contenido real. La clasificación queda guardada en este navegador y la plataforma la utiliza automáticamente al recargarse.</p><section id="list"></section><div class="saved"><span id="status">Sin cambios todavía.</span><a href="index.html">Volver a la plataforma</a></div></main>
+<script>
+const list=document.querySelector('#list');
+const saved=JSON.parse(localStorage.getItem('infancias-audio-labels')||'{}');
+const volumes=JSON.parse(localStorage.getItem('infancias-audio-volumes')||'{}');
+const options=[['','Sin clasificar'],['juego','Risa / juego / carrera'],['respiracion','Respiración'],['voz','Voz: ¿mamá?'],['otro','Otro / no utilizar']];
+let audioContext;const previewGains=new Map();
+const files=['caja-musical.mp3','risas-nina.ogg','respiracion-agitada-01.ogg','respiracion-agitada-02.ogg','respiracion-agitada-03.ogg','mama.ogg','mama-donde-estas.ogg','mama-variacion-02.ogg','mama-variacion-03.ogg','mama-variacion-04.ogg'];
+for(const file of files){
+  const name=file.replace('.mp3','');const row=document.createElement('div');row.className='audio';
+  const isBox=file==='caja-musical.mp3';
+  const defaultKind=file.startsWith('risas')?'juego':file.startsWith('respiracion')?'respiracion':file.startsWith('mama')?'voz':'';if(defaultKind&&!saved[file])saved[file]=defaultKind;
+  row.innerHTML=`<strong>${name}</strong><audio controls preload="metadata" src="assets/audio/${file}"></audio><select aria-label="Clasificar ${name}" ${isBox?'disabled':''}>${isBox?'<option>Caja musical</option>':options.map(([value,label])=>`<option value="${value}" ${(saved[file]||defaultKind)===value?'selected':''}>${label}</option>`).join('')}</select><label class="volume">Volumen <output>${volumes[file]||100}%</output><input type="range" min="20" max="200" value="${volumes[file]||100}"></label>`;
+  const audio=row.querySelector('audio');audio.addEventListener('play',()=>{document.querySelectorAll('audio').forEach(other=>{if(other!==audio)other.pause()});audioContext ||= new AudioContext();audioContext.resume();if(!previewGains.has(file)){const source=audioContext.createMediaElementSource(audio);const gain=audioContext.createGain();source.connect(gain).connect(audioContext.destination);previewGains.set(file,gain)}previewGains.get(file).gain.value=(volumes[file]||100)/100});
+  const select=row.querySelector('select');if(!isBox)select.addEventListener('change',event=>{saved[file]=event.target.value;localStorage.setItem('infancias-audio-labels',JSON.stringify(saved));document.querySelector('#status').textContent=`Guardado: ${name} → ${event.target.options[event.target.selectedIndex].text}`});
+  const volume=row.querySelector('input');volume.addEventListener('input',()=>{volumes[file]=Number(volume.value);row.querySelector('output').value=`${volume.value}%`;if(previewGains.has(file))previewGains.get(file).gain.value=Number(volume.value)/100;localStorage.setItem('infancias-audio-volumes',JSON.stringify(volumes));document.querySelector('#status').textContent=`Volumen guardado: ${name} → ${volume.value}%`});list.append(row)
+}
+</script>
+</html>
